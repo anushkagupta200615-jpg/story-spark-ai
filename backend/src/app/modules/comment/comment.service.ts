@@ -1,7 +1,7 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
-import { IComment, ICommentPayload } from "./comment.interface";
+import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
 import { Types } from "mongoose";
@@ -16,7 +16,10 @@ const createComment = async (
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: payload.postId });
+  const post = await Post.findOne({
+    _id: payload.postId,
+    isDeleted: { $ne: true },
+  });
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
@@ -37,38 +40,7 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-  // Fetch all comments for this post in a single query instead of
-  // issuing N+1 queries (1 for top-level + N for each reply thread).
-  const allComments = await Comment.find({ postId })
-    .populate("userId", "name email")
-    .populate({ path: "likes" })
-    .sort({ createdAt: 1 });
-
-  const totalComments = allComments.length;
-
-  // Build parent → replies tree in O(N) using a lookup map.
-  const repliesMap = new Map<string, typeof allComments>();
-  const topLevelComments: typeof allComments = [];
-
-  for (const comment of allComments) {
-    if (comment.parentCommentId) {
-      const parentId = comment.parentCommentId.toString();
-      if (!repliesMap.has(parentId)) {
-        repliesMap.set(parentId, []);
-      }
-      repliesMap.get(parentId)!.push(comment);
-    } else {
-      topLevelComments.push(comment);
-    }
-  }
-
-  // Attach replies to each top-level comment and reverse for newest-first.
-  const commentsWithReplies = topLevelComments.reverse().map((comment) => ({
-    ...comment.toObject(),
-    replies: repliesMap.get(comment._id.toString()) || [],
-  }));
-
-  return { comments: commentsWithReplies, totalComments };
+main
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
@@ -80,6 +52,13 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   const comment = await Comment.findById(commentId);
   if (!comment) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Comment not found!");
+  }
+  const post = await Post.findOne({
+    _id: comment.postId,
+    isDeleted: { $ne: true },
+  });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
   
   const hasLiked = comment.likes?.includes(user._id);
