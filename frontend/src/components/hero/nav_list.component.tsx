@@ -1,4 +1,94 @@
-return (
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import logo from "../../assets/logo.png";
+import ThemeToggle from "../theme/theme_toggle.component";
+import NotificationComponent from "../notification/notification.component";
+import { useGetNotificationsQuery } from "../../redux/apis/notification.api";
+import { isLoggedIn, getUserInfo } from "../../services/auth.service";
+import toast from "react-hot-toast";
+import { USER_ROLE } from "../../constants/role";
+
+interface Notification {
+  id: string;
+  isRead: boolean;
+  message?: string;
+}
+
+const NavListComponent = () => {
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const user = getUserInfo();
+  const isLogin = isLoggedIn();
+  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+
+  const { data: notificationsData } = useGetNotificationsQuery(undefined, {
+    skip: !isLogin,
+  });
+
+  const notifications: Notification[] = notificationsData?.data || [];
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const toggle = () => setIsOpen((prev) => !prev);
+  const close = () => setIsOpen(false);
+
+  const markAsRead = (notificationId: string) => {
+    // Handle mark as read logic
+  };
+
+  const getLinkClass = (isActive: boolean) => {
+    return `inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-300 ${
+      isActive
+        ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+    }`;
+  };
+
+  const getMobileLinkClass = (isActive: boolean) => {
+    return `block rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-300 ${
+      isActive
+        ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+    }`;
+  };
+
+  const renderMobileNavContent = (label: string, isActive: boolean) => (
+    <>
+      {isActive && (
+        <span className="w-1.5 h-1.5 bg-custom rounded-full animate-pulse shadow-[0_0_8px_#3b82f6]" />
+      )}
+      <span>{label}</span>
+    </>
+  );
+
+  const handelLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    navigate("/login");
+    toast.success("Logged out successfully");
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationMenuRef.current &&
+        !notificationMenuRef.current.contains(event.target as Node)
+      ) {
+        close();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
   <header className="sticky top-0 z-50 w-full bg-white/90 supports-[backdrop-filter]:bg-white/75 dark:bg-[#0B1120]/80 dark:supports-[backdrop-filter]:bg-[#0B1120]/70 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10 transition-colors duration-300 transform-gpu">
     <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
       <div className="flex items-center justify-between w-full gap-2">
@@ -236,4 +326,7 @@ return (
       )}
     </div>
   </header>
-);
+  );
+};
+
+export default NavListComponent;
