@@ -1827,7 +1827,136 @@ const handleGenerateCharacterProfile = async () => {
           </div>
         </div>
 
+        {/* ── Right Column: Preview Panel ── */}
+        <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6">
+          <div className="mb-4 text-left select-none px-0.5">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Compilation Preview</h2>
+          </div>
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden group w-full box-border text-left">
+            <div className="flex flex-col w-full box-border">
+              <div className="relative p-3 overflow-hidden text-white w-full box-border" style={{ height: "192px" }}>
+                <StoryCoverImage
+                  title={selectedStory.title}
+                  tag={selectedStory.tag}
+                  className="transition-transform duration-500 group-hover:scale-[1.02]"
+                  style={{ width: "100%", height: "100%", borderRadius: "1rem" }}
+                />
+              </div>
 
+              <div className="p-5 sm:p-6 w-full box-border">
+                <div className="flex justify-between items-center mb-4 w-full box-border select-none">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="inline-flex items-center rounded-lg bg-purple-500/10 border border-purple-500/10 py-1 px-2.5 text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                      {selectedStory.tag}
+                    </div>
+                    <div className="inline-flex items-center rounded-lg bg-blue-500/10 border border-blue-500/10 py-1 px-2.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                      {selectedStory.language || "English"}
+                    </div>
+                    <div className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-white/5 py-1 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 gap-1">
+                      ⏱️ {calculateReadingTime(selectedStory.content)} Min Read
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <BookmarkButton storyId={selectedStory.uuid} />
+                  </div>
+                </div>
+                <h3 className="mb-2 text-slate-900 dark:text-slate-200 text-lg sm:text-xl font-extrabold tracking-tight leading-snug">{selectedStory.title}</h3>
+                <p className="text-slate-500 dark:text-slate-400 font-medium break-words text-xs sm:text-sm leading-relaxed m-0">{getShortenedText(selectedStory.content)}</p>
+            <div className="relative z-10 mt-6">
+              <AudioPlayer
+                ref={audioPlayerRef}
+                text={selectedStory.content}
+                title={selectedStory.title}
+                onWordIndexChange={setNarrationWordIndex}
+                onPlaybackStateChange={setNarrationState}
+              />
+            </div>
+          </div>
+          <div className="mt-6">
+  {characterProfiles.length > 0 && (
+    <>
+      <h3 className="text-xl font-bold text-white mb-4">
+        Character Profiles
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {characterProfiles.map((profile, index) => (
+          <CharacterProfileCard
+            key={index}
+            profile={profile}
+          />
+        ))}
+      </div>
+    </>
+  )}
+</div>
+          <div className="mt-7">
+            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
+              <h3 className="text-lg font-bold text-slate-200 mb-4">
+                Select Topics
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <input
+                  type="text"
+                  value={newTopicTitle}
+                  onChange={(event) => setNewTopicTitle(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleAddTopic();
+                    }
+                  }}
+                  placeholder="Add related topic"
+                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                />
+                <button
+                  type="button"
+                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
+                  onClick={handleAddTopic}
+                >
+                  Add Topic
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedStory ? (
+                  <>
+                    {topics.map((topic, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
+                      >
+                        <button
+                          type="button"
+                          className="cursor-pointer"
+                          onClick={() => handleTopicClick(index)}
+                        >
+                          {topic.selected ? (
+                            <i className="fa-solid fa-check"></i>
+                          ) : (
+                            <i className="fa-solid fa-plus"></i>
+                          )}{" "}
+                          {topic.title}
+                        </button>
+                        <button
+                          type="button"
+                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
+                          onClick={() => handleRemoveTopic(index)}
+                          disabled={topics.length <= 2}
+                          aria-label={`Remove ${topic.title}`}
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                      </span>
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-gray-400">
+                    No topics available. Please generate a story first.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
 
         {/* ── Right Column: Preview Panel ── */}
         <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6">
@@ -1958,20 +2087,10 @@ const handleGenerateCharacterProfile = async () => {
                 )}
               </div>
             </div>
-
-            {/* Alternate Endings Section */}
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                      Alternate Endings
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Explore alternate narrative styles for your story context.
-                    </p>
+          </div>
+        </div>
+      </div>
+      {showWorldMap && selectedStory && (
                   </div>
                   {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
                     <button
@@ -2095,74 +2214,6 @@ const handleGenerateCharacterProfile = async () => {
             )}
           </div>
         </div>
-
-        
-
-
-        <div className="col-span-1 lg:col-span-4">
-          <GeneratedStoryTimeline
-            content={selectedStory.content}
-            title={selectedStory.title}
-            narrationState={narrationState}
-            narrationWordIndex={narrationWordIndex}
-            onNavigate={(wordIndex) => {
-              console.log("Navigate to story word:", wordIndex);
-
-              // You can add scrolling logic here
-              if (storyContentRef.current) {
-                storyContentRef.current.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-              }
-            }}
-          />
-
-          <StoryCollections
-            storyId={selectedStory.uuid}
-            storyTitle={selectedStory.title}
-          />
-
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Preview
-            </h1>
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
-            <div className="relative flex flex-col rounded-lg">
-              <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                <ImageFallback
-                  src={selectedStory.imageURL}
-                  alt="card-image"
-                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="px-3 py-1">
-                <div className="flex justify-between items-center mb-2 w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      {selectedStory.tag.toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                    🌐 {(selectedStory.language || "English").toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                    ⏱️ {calculateReadingTime(selectedStory.content)} min read
-                    </div>
-                  </div>
-                  <div>
-                    <BookmarkButton storyId={selectedStory.uuid} />
-                  </div>
-                </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                  {selectedStory.title}
-                </h6>
-                <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
-                  {getShortenedText(selectedStory.content)}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       {showWorldMap && selectedStory && (
@@ -2216,31 +2267,6 @@ const handleGenerateCharacterProfile = async () => {
             language: selectedStory.language ?? "English",
           }}
           onClose={() => setShowContinueModal(false)}
-        />
-      )}
-        <StoryWorldMap
-          story={selectedStory.content}
-          title={selectedStory.title}
-          onClose={() => setShowWorldMap(false)}
-        />
-      )}
-      {showContinueModal && selectedStory && (
-        <ContinueStoryModal
-          story={selectedStory}
-          onClose={() => setShowContinueModal(false)}
-          onApply={(continuedContent) => {
-            setSelectedStory({
-              ...selectedStory,
-              content: continuedContent,
-            });
-            setStories(
-              stories.map((s) =>
-                s.uuid === selectedStory.uuid
-                  ? { ...s, content: continuedContent }
-                  : s
-              )
-            );
-          }}
         />
       )}
       <Toaster position="top-right" reverseOrder={false} />
