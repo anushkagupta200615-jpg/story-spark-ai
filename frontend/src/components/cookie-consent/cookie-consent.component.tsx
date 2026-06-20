@@ -65,7 +65,7 @@ const ToggleSwitch: FC<ToggleSwitchProps> = ({ checked, onChange, label, isDark 
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 cursor-pointer ${trackClasses}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 cursor-pointer ${trackClasses}`}
     >
       <span
         className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
@@ -140,13 +140,13 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
   ];
 
   return (
-    <div className={overlayClasses} role="dialog" aria-modal="true" aria-labelledby="cookie-consent-title">
+    <div className={overlayClasses} role="dialog" aria-modal="true" aria-labelledby="cookie-consent-title" aria-describedby="cookie-consent-description">
       <div className={modalClasses}>
         <p className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}>Cookie preferences</p>
         <h2 id="cookie-consent-title" className={`mt-1.5 text-xl font-bold tracking-tight sm:text-2xl ${primaryText}`}>
           Manage your cookie settings
         </h2>
-        <p className={`mt-2.5 text-sm leading-relaxed sm:text-base ${secondaryText}`}>
+        <p id="cookie-consent-description" className={`mt-2.5 text-sm leading-relaxed sm:text-base ${secondaryText}`}>
           StorySpark AI uses cookies to keep the experience secure and smooth. Select which cookie
           categories you want to allow, or accept all for the best experience.{" "}
           <Link
@@ -193,12 +193,14 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
 
         <div className="mt-6 flex flex-col gap-2.5">
           <button
+            type="button"
             onClick={handleAcceptAll}
             className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all duration-150 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98]"
           >
             Accept all cookies
           </button>
           <button
+            type="button"
             onClick={handleEssentialOnly}
             className={
               isDark
@@ -209,6 +211,7 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
             Essential cookies only
           </button>
           <button
+            type="button"
             onClick={handleSavePreferences}
             className={`mt-0.5 cursor-pointer text-center text-xs font-semibold underline-offset-2 transition-colors hover:underline ${mutedText}`}
           >
